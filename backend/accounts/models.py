@@ -33,7 +33,8 @@ class AccountsUser(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True, unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True)
-    role = models.CharField(max_length=255, null=False, blank=False) #remove 
+    role = models.CharField(max_length=255, null=False, blank=False)
+    birth_date = models.CharField(max_length=255, null=False, blank=False)
     reward_points = models.IntegerField(default=0)
 
     def __str__(self):
@@ -41,11 +42,11 @@ class AccountsUser(models.Model):
 
 
 class Feedback(models.Model):
-    receiver = models.ForeignKey(AccountsUser, on_delete=models.CASCADE, related_name='feedbacks')
+    sender = models.ForeignKey(AccountsUser, on_delete=models.CASCADE, related_name='feedbacks_sender', null=True)
+    receiver = models.ForeignKey(AccountsUser, on_delete=models.CASCADE, related_name='feedbacks_receiver', null=True)
 
     insight  = models.CharField(max_length=255, blank=True, null=True)
-    recommendation = models.CharField(max_length=255, blank=True, null=True)
-    response = models.CharField(max_length=255, blank=True, null=True)
+    rating = models.IntegerField(default=0)
 
     def __str__(self):
         return self.receiver.name

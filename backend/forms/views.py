@@ -9,8 +9,7 @@ from .models import *
 
 class NewFormAPI(APIView):
     def post(self, request):
-        # user_id = request.session.get('user_id')
-        user_id = 2
+        user_id = request.session.get('user_id', 1)
         user = AccountsUser.objects.get(id=user_id)
 
         request_data = request.data
@@ -28,7 +27,7 @@ class NewFormAPI(APIView):
         return resp(data='Form created', status=status.HTTP_200_OK)
     
     def get(self, request):
-        user_id = request.session.get('user_id')
+        user_id = request.session.get('user_id', 1)
         user = AccountsUser.objects.get(id=user_id)
         
         form_id = request.query_params.get('form_id', None)
@@ -48,7 +47,7 @@ class NewFormAPI(APIView):
 class AnswerFormAPI(APIView):
 
     def post(self, request):
-        user_id = request.session.get('user_id')
+        user_id = request.session.get('user_id', 1)
         user = AccountsUser.objects.get(id=user_id)
 
         request_data = request.data

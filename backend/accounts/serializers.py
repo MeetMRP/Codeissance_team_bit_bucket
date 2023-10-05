@@ -3,6 +3,12 @@ from .models import *
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.exceptions import AuthenticationFailed
 from django.core.exceptions import ObjectDoesNotExist
+import os
+import random
+
+def get_random_image_from_folder(folder_path):
+    images = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+    return random.choice(images)
 
 class RegisterSerializer(serializers.ModelSerializer):
     company_code = serializers.CharField(write_only=True)
@@ -13,6 +19,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         company_code = validated_data.pop('company_code', None)
         hash_pass = make_password(validated_data.pop('password', None))
+        image_name = get_random_image_from_folder('D:\Hackathons\Codeissance_team_bit_bucket\pics')
+        profile_picture = validated_data.pop('profile_picture', os.path.join('profile_picture', image_name))
 
         # Fetch the Company instance using the provided company_code
         try:
@@ -21,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"company_code": "Invalid company code provided."})
 
         # Create the AccountsUser instance and assign the Company instance to it
-        user = AccountsUser.objects.create(password=hash_pass, company=company, **validated_data)
+        user = AccountsUser.objects.create(password=hash_pass, company=company, profile_picture=profile_picture, **validated_data)
 
         return user
     
@@ -56,7 +64,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Feedback
-        fields = ['insight', 'recommendation', 'user_name']
+        fields = ['insight', 'rating', 'user_name']
     
     def create(self, validated_data):
         user_name = validated_data.pop('user_name', None)
@@ -70,3 +78,25 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
         return feedback
  
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccountsUser
+        fields = '__all__'
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Feedback
+        fields = ['sender_name', 'insight', 'rating']
+    
+    def get_sender_name(self, obj):
+        print(obj.sender)
+        return obj.sender.name if obj.sender else None
+
+class UserRatingSerializer(serializers.ModelSerializer):
+    average_rating = serializers.FloatField()
+
+    class Meta:
+        model = AccountsUser
+        fields = ['name', 'average_rating']
